@@ -6,6 +6,8 @@ import {Button} from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {TextInput} from 'react-native-paper';
 
+import { io } from "socket.io-client";
+
 import {useFocusEffect} from '@react-navigation/native';
 
 import InCallManager from 'react-native-incall-manager';
@@ -30,7 +32,14 @@ export default function CallScreen({navigation, ...props}) {
   // Video Scrs
   const [localStream, setLocalStream] = useState({toURL: () => null});
   const [remoteStream, setRemoteStream] = useState({toURL: () => null});
-  const [conn, setConn] = useState(new WebSocket('ws://3.20.188.26:8080'));
+  //This could be the cloud server
+  //const [conn, setConn] = useState(new WebSocket('ws://10.80.105.54:3000'));
+
+  const [conn, setConn] = useState(io('ws://10.80.105.54:3000'));
+  //console.log(conn.id);
+  //const conn = io('ws://10.80.105.54:3000');
+
+  //This is our connection, this runs on phone
   const [yourConn, setYourConn] = useState(
     //change the config as you need
     new RTCPeerConnection({
@@ -46,7 +55,7 @@ export default function CallScreen({navigation, ...props}) {
       ],
     }),
   );
-
+  //console.log(yourConn);
   const [offer, setOffer] = useState(null);
 
   const [callToUsername, setCallToUsername] = useState(null);
@@ -92,6 +101,7 @@ export default function CallScreen({navigation, ...props}) {
 
       console.log(InCallManager);
 
+      console.log("Connecting to server Login");
       send({
         type: 'login',
         name: userId,
@@ -106,18 +116,26 @@ export default function CallScreen({navigation, ...props}) {
      *
      * Sockets Signalling
      */
+    /*
     conn.onopen = () => {
       console.log('Connected to the signaling server');
       setSocketActive(true);
     };
+    */
+    conn.on("connect", () => {
+      console.log('Connected to the signaling server');
+      setSocketActive(true);
+    });
     //when we got a message from a signaling server
-    conn.onmessage = msg => {
+    //conn.onmessage = msg => {
+    conn.on("message", function(message) {
+      console.log("Got message from server!");
       let data;
-      if (msg.data === 'Hello world') {
+      if (message.data === 'Hello world') {
         data = {};
       } else {
-        data = JSON.parse(msg.data);
-        console.log('Data --------------------->', data);
+        data = JSON.parse(message);
+        console.log('Data --------------------->');
         switch (data.type) {
           case 'login':
             console.log('Login');
@@ -144,10 +162,15 @@ export default function CallScreen({navigation, ...props}) {
             break;
         }
       }
-    };
+    });
+    /*
     conn.onerror = function(err) {
       console.log('Got error', err);
     };
+    */
+    conn.on("connect_error", () => {
+        console.log("Cannot Connect");
+    });
     /**
      * Socjket Signalling Ends
      */
@@ -209,9 +232,9 @@ export default function CallScreen({navigation, ...props}) {
     //attach the other peer username to our messages
     if (connectedUser) {
       message.name = connectedUser;
-      console.log('Connected iser in end----------', message);
+      console.log('Connected user in end----------');
     }
-
+    console.log("Socket ID sending to server: ", conn.id);
     conn.send(JSON.stringify(message));
   };
 
@@ -219,13 +242,13 @@ export default function CallScreen({navigation, ...props}) {
     setCalling(true);
 
     connectedUser = callToUsername;
-    console.log('Caling to', callToUsername);
+    console.log('Calling to', callToUsername);
     // create an offer
 
     yourConn.createOffer().then(offer => {
       yourConn.setLocalDescription(offer).then(() => {
-        console.log('Sending Ofer');
-        console.log(offer);
+        console.log('Sending Offer');
+        //console.log(offer);
         send({
           type: 'offer',
           offer: offer,
@@ -239,9 +262,10 @@ export default function CallScreen({navigation, ...props}) {
   const handleOffer = async (offer, name) => {
     console.log(name + ' is calling you.');
 
-    console.log('Accepting Call===========>', offer);
+    console.log('Accepting Call===========>');
     connectedUser = name;
-
+    console.log("Offer: ", offer);
+    //Cannot recieve offer if you sent the offer. Failed to set remote offer sdp: Called in wrong state: have-local-offer
     try {
       await yourConn.setRemoteDescription(new RTCSessionDescription(offer));
 
@@ -253,7 +277,7 @@ export default function CallScreen({navigation, ...props}) {
         answer: answer,
       });
     } catch (err) {
-      console.log('Offerr Error', err);
+      console.log('Offer Error: ', err);
     }
   };
 
