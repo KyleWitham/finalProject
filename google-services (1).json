@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "724280623488",
+    "project_id": "fitup-adb5f",
+    "storage_bucket": "fitup-adb5f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:724280623488:android:3760dd9f1b4e390a93c165",
+        "android_client_info": {
+          "package_name": "com.fitup.fitup"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "724280623488-4e6299t0oodng4cddr4ha0t9thkbtgnq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2QZXW9Us1_s0Av8CPEwt25dzikkp4S7E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "724280623488-4e6299t0oodng4cddr4ha0t9thkbtgnq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
