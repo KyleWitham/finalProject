@@ -35,7 +35,7 @@ export default function CallScreen({navigation, ...props}) {
   //This could be the cloud server
   //const [conn, setConn] = useState(new WebSocket('ws://10.80.105.54:3000'));
 
-  const [conn, setConn] = useState(io('ws://10.80.106.24:3000'));
+  const [conn, setConn] = useState(io('ws://3.129.50.8:3000'));
   //console.log(conn.id);
   //const conn = io('ws://10.80.105.54:3000');
 
